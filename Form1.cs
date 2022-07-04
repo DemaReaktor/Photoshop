@@ -22,7 +22,7 @@ namespace photoshopCsharp
         List<Bitmap> Jp { get; }
 
         bool vybir;
-        int vid;
+        float vid;
         string Tod(string s)
         {
             string s1 = "";
@@ -202,27 +202,83 @@ namespace photoshopCsharp
             }
         }
 
-        void AlphaShow(ColirRGBA[] c)
+        public void AlphaShow(ColirRGBA[] c)
         {
             for (int i = 0; i < c.Length; i++)
                 c[i] = new ColirRGBA((int)(c[i].R * c[i].a / 255f), (int)(c[i].G * c[i].a / 255f), (int)(c[i].B * c[i].a / 255f));
         }
         public void AlphaToColor(ColirRGBA[] c)
         {
+            int k = int.Parse(textBox1.Text).mm(1,50);
+            int variant = int.Parse(textBox2.Text).mm(1,5);
+            int variant2 = int.Parse(textBox4.Text).mm(1,3);
+            float rozmir = (float)(int.Parse(textBox6.Text).mm(1,100))/10f;
             for (int y = 0; y < my; y++)
                 for (int x = 0; x < mx; x++)
                 {
-                    int i = x + y * mx, h = (int)((Math.Sin(x*0.2f)+Math.Cos(y * 0.2f) +2f)*90f);
+                    float rx = (float)x * rozmir, ry = (float)x * rozmir;
+                    double nx = 2f*x * k /mx * Math.PI, ny = 2f * y * k / my * Math.PI;
+                    int i = x + y * mx, ri = (int)(i*rozmir);
+                    float cx = rx / mx, cy = ry / my;
+                    //float t = 5000f * Math.Pow(Math.E, Math.Sin(i)) + x + y;
+                    //int h = (7200 + (int)(10f * ind) - (int)(cx * 10f) * 360 - (int)(cy * 10f) * 360) % 360;
+                    int h=0;
+                    switch (variant)
+                    {
+                        case 1:
+                          h = (int)(ri * (ri % 10)) % 360;
+                            break;
+                        case 2:
+                            h = (int)(5000f * Math.Pow(Math.E, Math.Sin(ri)) + rx + ry) % 360;
+                            break;
+                        case 3:
+                            h = (7200 + (int)(10f * i) - (int)(cx * 10f) * 360 - (int)(cy * 10f) * 360) % 360;
+                            break;
+                        case 4:
+                            h = (int)(rx * rx * rx + ry * Math.Pow(i, 2 + Math.Sin(rx * ry))) % 360;
+                            break;
+                        case 5:
+                            h = (int)(ri * (ri % 100)) % 360;
+                            break;
+                    }
 
                     var colir = new ColirRGBA(new ColirHSV(h, 100, 100), c[i].a);
 
+                    int a = 255;
+                    switch (variant2)
+                    {
+                        case 1:
+                            a = (int)(c[i].a * c[i].a / 255f + (int)((Math.Sin(nx + Math.PI*0.5f) + 1f) * 0.5f * (255 - c[i].a)));
+                            break;
+                        case 2:
+                            a = (int)(c[i].a * c[i].a / 255f + (int)((Math.Sin(ny+Math.PI * 0.5f) + 1f) * 0.5f * (255 - c[i].a)));
+                            break;
+                        case 3:
+                            a = 255;
+                            break;
+                    }
+
                     c[i] = new ColirRGBA((int)(c[i].R * c[i].a / 255f + colir.R * (255 - c[i].a) / 255f),
                         (int)(c[i].G * c[i].a / 255f + colir.G * (255 - c[i].a) / 255f),
-                        (int)(c[i].B * c[i].a / 255f + colir.B * (255 - c[i].a) / 255f), 
-                        255);
+                        (int)(c[i].B * c[i].a / 255f + colir.B * (255 - c[i].a) / 255f),
+                        a);
+                    vid = 200f + 10000f * i/my/mx;
                 }
+            vid = 10200f;
         }
+        public void ChangeSize(ref ColirRGBA[] c)
+        {
+            int sx = int.Parse(textBox1.Text).mm(1, 10000), sy = int.Parse(textBox2.Text).mm(1, 10000);
+            ColirRGBA[] newC = new ColirRGBA[sx*sy];
+            float kx = (float)sx / mx, ky = (float)sy / my;
+            for (int y=0;y<my;y++)
+            for(int x = 0; x < mx; x++)
+                    newC[(int)(x * kx) + (int)(y * ky) * sx] = c[x+y*mx];
 
+            c = newC;
+            mx = sx;
+            my = sy;
+        }
         ColirRGB Ceredniy(ColirRGB[] c, int x, int y)
         {
             ColirRGB cer = new ColirRGB();
@@ -296,11 +352,11 @@ namespace photoshopCsharp
         {
             Bitmap map = new Bitmap(j);
             ColirRGBA[] c = new ColirRGBA[mx * my];
-            vid = 100;
+            vid = 50f;
             for (int i = 0; i < c.Length; i++)
                 c[i] = new ColirRGBA(map.GetPixel(i % mx, i / mx));
 
-            vid = 200;
+            vid = 100f;
 
             foreach (var element in typeof(Form1).GetMethods())
                 if ((string)s == element.Name && element.GetParameters().Length == 1 && element.GetParameters()[0].ParameterType == typeof(ColirRGBA[]))
@@ -308,6 +364,9 @@ namespace photoshopCsharp
 
             switch (s)
             {
+                case "ChangeSize":
+                    ChangeSize(ref c);
+                    break;
                 case "округлення":
                     Art1(c);
                     break;
@@ -333,13 +392,13 @@ namespace photoshopCsharp
                     osv(c);
                     break;
             }
-            vid = 9900;
+            vid += 100f;
             map = new Bitmap(map, mx, my);
             for (int i = 0; i < c.Length; i++)
                 map.SetPixel(i % mx, i / mx, c[i]);
             j = new Bitmap(map);
             CreateMap(map);
-            vid = 10000;
+            vid += 100f;
         }
         private void button1_Click(object sender, EventArgs e)//запуск
         {
@@ -453,12 +512,29 @@ namespace photoshopCsharp
                     textBox2.Text = "0.5";
                     textBox4.Text = "90";
                     break;
+                case "AlphaToColor":
+                    textBox1.Visible = true;
+                    textBox2.Visible = true;
+                    textBox4.Visible = true;
+                    textBox6.Visible = true;
+                    textBox1.Text = "10";
+                    textBox2.Text = "1";
+                    textBox4.Text = "1";
+                    textBox6.Text = "10";
+                    break;
+                case "ChangeSize":
+                    textBox1.Visible = true;
+                    textBox2.Visible = true;
+                    textBox1.Text = "1000";
+                    textBox2.Text = "1000";
+                    break;
             }
         }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            label5.Text = vid == -1 ? "" : (vid / 100).ToString() + "." + (vid % 100).ToString() + "%";
+            float nvid = vid / 1.04f;
+            label5.Text = nvid == -1 ? "" : ((int)nvid / 100).ToString() + "." + ((int)nvid % 100).ToString() + "%";
             if (label5.Text == "100%")
             {
                 label5.Visible = false;

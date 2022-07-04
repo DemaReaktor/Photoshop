@@ -159,6 +159,7 @@
             // 
             this.comboBox2.FormattingEnabled = true;
             this.comboBox2.Items.AddRange(new object[] {
+            "ChangeSize",
             "округлення",
             "art2",
             "promeni",
