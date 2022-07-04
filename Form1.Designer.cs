@@ -166,7 +166,8 @@
             "усереднення",
             "чисто кольоровий",
             "поєднання",
-            "освітлення"});
+            "освітлення",
+            "прозорість"});
             this.comboBox2.Location = new System.Drawing.Point(1028, 12);
             this.comboBox2.Name = "comboBox2";
             this.comboBox2.Size = new System.Drawing.Size(121, 21);
@@ -227,8 +228,9 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.ErrorImage = ((System.Drawing.Image)(resources.GetObject("pictureBox1.ErrorImage")));
-            this.pictureBox1.Image = global::photoshopCsharp.Properties.Resources.Парк_Победы_в_Саратове_39;
+            this.pictureBox1.ErrorImage = null;
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+            this.pictureBox1.InitialImage = null;
             this.pictureBox1.Location = new System.Drawing.Point(12, 12);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(818, 500);
