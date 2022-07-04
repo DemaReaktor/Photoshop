@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using System.Reflection;
 using Operations;
 using Colors;
 
@@ -201,11 +202,25 @@ namespace photoshopCsharp
             }
         }
 
-        void AlphaCheck(ColirRGB[] c)
+        void AlphaShow(ColirRGBA[] c)
         {
-            //for (int i = 0; i < c.Length; i++)
-            //c[i] = c[i].a > 0 ? c[i] : new ColirRGBA();
-            //c[i] = new ColirRGBA((int)(c[i].r * c[i].a / 255f), (int)(c[i].g * c[i].a / 255f), (int)(c[i].b * c[i].a / 255f));
+            for (int i = 0; i < c.Length; i++)
+                c[i] = new ColirRGBA((int)(c[i].R * c[i].a / 255f), (int)(c[i].G * c[i].a / 255f), (int)(c[i].B * c[i].a / 255f));
+        }
+        public void AlphaToColor(ColirRGBA[] c)
+        {
+            for (int y = 0; y < my; y++)
+                for (int x = 0; x < mx; x++)
+                {
+                    int i = x + y * mx, h = (int)((Math.Sin(x*0.2f)+Math.Cos(y * 0.2f) +2f)*90f);
+
+                    var colir = new ColirRGBA(new ColirHSV(h, 100, 100), c[i].a);
+
+                    c[i] = new ColirRGBA((int)(c[i].R * c[i].a / 255f + colir.R * (255 - c[i].a) / 255f),
+                        (int)(c[i].G * c[i].a / 255f + colir.G * (255 - c[i].a) / 255f),
+                        (int)(c[i].B * c[i].a / 255f + colir.B * (255 - c[i].a) / 255f), 
+                        255);
+                }
         }
 
         ColirRGB Ceredniy(ColirRGB[] c, int x, int y)
@@ -284,7 +299,13 @@ namespace photoshopCsharp
             vid = 100;
             for (int i = 0; i < c.Length; i++)
                 c[i] = new ColirRGBA(map.GetPixel(i % mx, i / mx));
+
             vid = 200;
+
+            foreach (var element in typeof(Form1).GetMethods())
+                if ((string)s == element.Name && element.GetParameters().Length == 1 && element.GetParameters()[0].ParameterType == typeof(ColirRGBA[]))
+                    element.Invoke(this, new object[] { c });
+
             switch (s)
             {
                 case "округлення":
@@ -310,9 +331,6 @@ namespace photoshopCsharp
                     break;
                 case "освітлення":
                     osv(c);
-                    break;
-                case "прозорість":
-                    AlphaCheck(c);
                     break;
             }
             vid = 9900;
