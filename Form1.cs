@@ -209,24 +209,24 @@ namespace photoshopCsharp
         }
         public void AlphaToColor(ColirRGBA[] c)
         {
-            int k = int.Parse(textBox1.Text).mm(1,50);
-            int variant = int.Parse(textBox2.Text).mm(1,5);
-            int variant2 = int.Parse(textBox4.Text).mm(1,3);
-            float rozmir = (float)(int.Parse(textBox6.Text).mm(1,100))/10f;
+            int k = int.Parse(textBox1.Text).mm(1, 50);
+            int variant = int.Parse(textBox2.Text).mm(1, 5);
+            int variant2 = int.Parse(textBox4.Text).mm(1, 3);
+            float rozmir = (float)(int.Parse(textBox6.Text).mm(1, 100)) / 10f;
             for (int y = 0; y < my; y++)
                 for (int x = 0; x < mx; x++)
                 {
                     float rx = (float)x * rozmir, ry = (float)x * rozmir;
-                    double nx = 2f*x * k /mx * Math.PI, ny = 2f * y * k / my * Math.PI;
-                    int i = x + y * mx, ri = (int)(i*rozmir);
+                    double nx = 2f * x * k / mx * Math.PI, ny = 2f * y * k / my * Math.PI;
+                    int i = x + y * mx, ri = (int)(i * rozmir);
                     float cx = rx / mx, cy = ry / my;
                     //float t = 5000f * Math.Pow(Math.E, Math.Sin(i)) + x + y;
                     //int h = (7200 + (int)(10f * ind) - (int)(cx * 10f) * 360 - (int)(cy * 10f) * 360) % 360;
-                    int h=0;
+                    int h = 0;
                     switch (variant)
                     {
                         case 1:
-                          h = (int)(ri * (ri % 10)) % 360;
+                            h = (int)(ri * (ri % 10)) % 360;
                             break;
                         case 2:
                             h = (int)(5000f * Math.Pow(Math.E, Math.Sin(ri)) + rx + ry) % 360;
@@ -248,10 +248,10 @@ namespace photoshopCsharp
                     switch (variant2)
                     {
                         case 1:
-                            a = (int)(c[i].a * c[i].a / 255f + (int)((Math.Sin(nx + Math.PI*0.5f) + 1f) * 0.5f * (255 - c[i].a)));
+                            a = (int)(c[i].a * c[i].a / 255f + (int)((Math.Sin(nx + Math.PI * 0.5f) + 1f) * 0.5f * (255 - c[i].a)));
                             break;
                         case 2:
-                            a = (int)(c[i].a * c[i].a / 255f + (int)((Math.Sin(ny+Math.PI * 0.5f) + 1f) * 0.5f * (255 - c[i].a)));
+                            a = (int)(c[i].a * c[i].a / 255f + (int)((Math.Sin(ny + Math.PI * 0.5f) + 1f) * 0.5f * (255 - c[i].a)));
                             break;
                         case 3:
                             a = 255;
@@ -262,19 +262,17 @@ namespace photoshopCsharp
                         (int)(c[i].G * c[i].a / 255f + colir.G * (255 - c[i].a) / 255f),
                         (int)(c[i].B * c[i].a / 255f + colir.B * (255 - c[i].a) / 255f),
                         a);
-                    vid = 200f + 10000f * i/my/mx;
+                    vid = 200f + 10000f * i / my / mx;
                 }
             vid = 10200f;
         }
         public void ChangeSize(ref ColirRGBA[] c)
         {
             int sx = int.Parse(textBox1.Text).mm(1, 10000), sy = int.Parse(textBox2.Text).mm(1, 10000);
-            ColirRGBA[] newC = new ColirRGBA[sx*sy];
-            float kx = (float)sx / mx, ky = (float)sy / my;
-            for (int y=0;y<my;y++)
-            for(int x = 0; x < mx; x++)
-                    newC[(int)(x * kx) + (int)(y * ky) * sx] = c[x+y*mx];
-
+            ColirRGBA[] newC = new ColirRGBA[sx * sy];
+            for (int y = 0; y < sy; y++)
+                for (int x = 0; x < sx; x++)
+                    newC[x + y * sx] = c[(int)((float)x * mx / sx) + (int)((float)y * my / sy) * mx];
             c = newC;
             mx = sx;
             my = sy;
