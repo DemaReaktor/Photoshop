@@ -92,7 +92,7 @@ namespace photoshopCsharp
                 c[i] = ColirOperation.Mix(new ColirRGB(h), c[i], Math.Abs(RandomMy.random()) % 1000 <= (int)(1000f * rand) ? h.s * k * s * 0.0001f : 0);
             }
         }
-        void Mezhi(ColirRGB[] c)
+        void Mezhi(ColirRGBA[] c)
         {
             int k = int.Parse(textBox1.Text) > 0 ? int.Parse(textBox1.Text) : 1;
             uint[] r = new uint[mx * my];
@@ -110,7 +110,7 @@ namespace photoshopCsharp
                     r[i] = Mezha(r, i % mx, i / mx, (uint)(e + 1));
 
             for (int i = 0; i < c.Length; i++)
-                if (r[i] > 0) c[i] = new ColirRGB();
+                if (r[i] > 0) c[i] = new ColirRGBA();
         }
         void Art1(ColirRGB[] c)
         {
@@ -136,18 +136,18 @@ namespace photoshopCsharp
             for (int i = 0; i < c.Length; i++)
                 c[i] = new ColirRGB(h[i]);
         }
-        void Ucerednenia(ColirRGB[] c)
+        void Ucerednenia(ColirRGBA[] c)
         {
-            ColirRGB[] cNew = new ColirRGB[c.Length];
+            ColirRGBA[] cNew = new ColirRGBA[c.Length];
             for (int i = 0; i < c.Length; i++)
                 cNew[i] = Ceredniy(c, i % mx, i / mx);
             for (int i = 0; i < c.Length; i++)
                 c[i] = cNew[i];
         }
-        void Kolir(ColirRGB[] c)
+        void Kolir(ColirRGBA[] c)
         {
             for (int i = 0; i < c.Length; i++)
-                c[i] = new ColirHSV(((ColirHSV)(c[i])).h, 100, 100);
+                c[i] = new ColirRGBA(((ColirHSV)(c[i])).h, 100, 100);
         }
         void Mix(ColirRGB[] c)
         {
@@ -192,13 +192,13 @@ namespace photoshopCsharp
                 c = map;
             }
         }
-        void osv(ColirRGB[] c)
+        void osv(ColirRGBA[] c)
         {
             ColirHSV s;
             for (int i = 0; i < c.Length; i++)
             {
                 s = c[i];
-                c[i] = new ColirHSV(s.h, (int)(Math.Sqrt(s.s) * 10), s.v);
+                c[i] = new ColirRGBA( new ColirHSV(s.h, (int)(Math.Sqrt(s.s) * 10), s.v));
             }
         }
 
@@ -218,7 +218,7 @@ namespace photoshopCsharp
                 {
                     float rx = (float)x * rozmir, ry = (float)x * rozmir;
                     double nx = 2f * x * k / mx * Math.PI, ny = 2f * y * k / my * Math.PI;
-                    int i = x + y * mx, ri = (int)(i * rozmir);
+                    int i = x + y * mx, ri = (int)(x* rozmir + y * mx * rozmir);
                     float cx = rx / mx, cy = ry / my;
                     //float t = 5000f * Math.Pow(Math.E, Math.Sin(i)) + x + y;
                     //int h = (7200 + (int)(10f * ind) - (int)(cx * 10f) * 360 - (int)(cy * 10f) * 360) % 360;
@@ -226,7 +226,7 @@ namespace photoshopCsharp
                     switch (variant)
                     {
                         case 1:
-                            h = (int)(ri * (ri % 10)) % 360;
+                            h = (ri * (ri % 10)) % 360;
                             break;
                         case 2:
                             h = (int)(5000f * Math.Pow(Math.E, Math.Sin(ri)) + rx + ry) % 360;
@@ -277,9 +277,9 @@ namespace photoshopCsharp
             mx = sx;
             my = sy;
         }
-        ColirRGB Ceredniy(ColirRGB[] c, int x, int y)
+        ColirRGBA Ceredniy(ColirRGBA[] c, int x, int y)
         {
-            ColirRGB cer = new ColirRGB();
+            ColirRGBA cer = new ColirRGBA();
             int k = 0, n = x + y * mx;
             if (n >= mx)
             {
@@ -321,7 +321,7 @@ namespace photoshopCsharp
                 k++;
                 cer += c[n + 1];
             }
-            cer = new ColirRGB((int)((float)cer.R / k), (int)((float)cer.G / k), (int)((float)cer.B / k));
+            cer = new ColirRGBA((int)((float)cer.R / k), (int)((float)cer.G / k), (int)((float)cer.B / k));
             return cer;
         }
         uint Mezha(uint[] k, int x, int y, uint t)
