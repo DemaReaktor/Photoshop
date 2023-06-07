@@ -14,7 +14,7 @@ namespace photoshopCsharp
     public partial class Form1 : Form
     {
         Control[] Controllist { get; }
-        Thread th;
+        Thread thread;
         int listMapCount;
         int mx, my;
         List<int> MxList { get; }
@@ -44,14 +44,16 @@ namespace photoshopCsharp
             Controllist[12] = label6;
             Controllist[13] = textBox6;
             Controllist[14] = textBox7;
+            Controllist[15] = pictureBox2;
 
-            Controllist[15] = label1;
-            Controllist[16] = button4;
-            Controllist[17] = button3;
-            Controllist[18] = button2;
-            Controllist[19] = button1;
-            Controllist[20] = comboBox2;
-            Controllist[21] = pictureBox1;
+            Controllist[Controllist.Length-8] = label1;
+            Controllist[Controllist.Length-7] = button4;
+            Controllist[Controllist.Length-6] = button5;
+            Controllist[Controllist.Length - 5] = button3;
+            Controllist[Controllist.Length-4] = button2;
+            Controllist[Controllist.Length-3] = button1;
+            Controllist[Controllist.Length-2] = comboBox2;
+            Controllist[Controllist.Length-1] = pictureBox1;
             vid = -1;
             j = new Bitmap(pictureBox1.Image);// new Bitmap(@"E:\C#\photoshopCsharp\1.jpg");
             listMapCount = 0;
@@ -65,7 +67,7 @@ namespace photoshopCsharp
         }
         void Clear()
         {
-            for (int i = 0; i < Controllist.Length - 7; i++)
+            for (int i = 0; i < Controllist.Length - 8; i++)
             {
                 Controllist[i].Visible = false;
             }
@@ -228,6 +230,7 @@ namespace photoshopCsharp
             bool all = true;
             Color space = pictureBox2.BackColor;
             int lenth = c.Where(e => space == e).Count();
+            List<int> exceptions = new List<int>();
 
             while (true)
             {
@@ -235,54 +238,50 @@ namespace photoshopCsharp
                 c.CopyTo(newc, 0);
 
                 for (int i = 0; i < c.Length; i++)
-                    if(c[i] == space)
+                    if(IsSpace(i,c))
                 {
                         int x = i % mx;
                         int y = i / mx;
                         int r=0,g=0,b=0;
                         int count = 0;
 
-                        if (x > 0 && space != c[i - 1])
-                        {
-                            r += c[i - 1].R;
-                            g += c[i - 1].G;
-                            b += c[i - 1].B;
-                            count++;
-                        }
-                        if (x + 1 < mx && space != c[i + 1])
-                        {
-                            r += c[i + 1].R;
-                            g += c[i + 1].G;
-                            b += c[i + 1].B;
-                            count++;
-                        }
-                        if (y > 0 && space != c[i - mx])
-                        {
-                            r += c[i - mx].R;
-                            g += c[i - mx].G;
-                            b += c[i - mx].B;
-                            count++;
-                        }
-                        if (y + 1 < my && space != c[i + mx])
-                        {
-                            r += c[i + mx].R;
-                            g += c[i + mx].G;
-                            b += c[i + mx].B;
-                            count++;
-                        }
+                        for(int yy=-2;yy<3;yy++)
+                        for(int xx = -2; xx < 3; xx++)
+                            {
+                                if (x+xx >= 0 && x+xx < mx && y + yy >= 0 && y + yy < my && !IsSpace(i + xx + yy * mx, c))
+                                {
+                                    r += c[i + xx + yy*mx].R;
+                                    g += c[i + xx + yy * mx].G;
+                                    b += c[i + xx + yy * mx].B;
+                                    count++;
+                                }
+                            }
+
                         if (count > 0)
                         {
-                            newc[i] = new ColirRGBA(r, g, b, c[i].a) / count;
-                            lock((object)vid)
+                            newc[i] = new ColirRGBA(r/count, g/count, b/count, c[i].a);
                                 vid += 10000f / lenth;
+                            if(IsSpace(i,newc))
+                                exceptions.Add(i);
                         }
 
                         all = false;
                     }
+                newc.CopyTo(c, 0);
                 if (all)
                     return;
                 all = true;
-                //newc.CopyTo(c,0);
+            }
+
+            bool IsSpace(int index, ColirRGBA[] a) {
+                if (exceptions.Contains(index))
+                    return false;
+
+                int r = Math.Abs(space.R - a[index].R);
+                int g = Math.Abs(space.G - a[index].G);
+                int b = Math.Abs(space.B - a[index].B);
+
+                return r + g + b < 15;
             }
         }
 
@@ -480,8 +479,8 @@ namespace photoshopCsharp
         private void button1_Click(object sender, EventArgs e)//запуск
         {
             label5.Visible = true;
-            th = new Thread(Do);
-            th.Start(comboBox2.Text);
+            thread = new Thread(Do);
+            thread.Start(comboBox2.Text);
         }
 
         private void comboBox2_SelectedIndexChanged(object sender = null, EventArgs e = null)
@@ -624,12 +623,12 @@ namespace photoshopCsharp
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            float nvid = vid / 1.04f;
+            float nvid = vid / 1.035f;
             label5.Text = nvid == -1 ? "" : ((int)nvid / 100).ToString() + "." + ((int)nvid % 100).ToString() + "%";
-            if (label5.Text == "100%")
+            if (thread != null && thread.ThreadState != ThreadState.Running)
             {
                 label5.Visible = false;
-                th.Abort();
+                thread.Abort();
                 vid = -1;
                 pictureBox1.Image = j;
             }
@@ -706,6 +705,10 @@ namespace photoshopCsharp
                 Bitmap picture = pictureBox1.Image as Bitmap;
                 pictureBox2.BackColor = picture.GetPixel(e.X*picture.Width/pictureBox1.Width,e.Y * picture.Height / pictureBox1.Height);
             }
+        }
+        private void button5_Click(object sender, EventArgs e)
+        {
+            thread.Abort();
         }
         #endregion
 
