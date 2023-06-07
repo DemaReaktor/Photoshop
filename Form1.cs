@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using System.Reflection;
 using Operations;
 using Colors;
+using System.Linq;
 
 namespace photoshopCsharp
 {
@@ -23,13 +24,7 @@ namespace photoshopCsharp
 
         string vybir;
         float vid;
-        string Tod(string s)
-        {
-            string s1 = "";
-            for (int i = 0; i < s.Length; i++)
-                s1 += s[i] == '.' ? ',' : s[i];
-            return s1;
-        }
+
         public Form1()
         {
             InitializeComponent();
@@ -76,11 +71,13 @@ namespace photoshopCsharp
             }
             pictureBox2.BackColor = Color.FromArgb(0,0,0,0);
         }
+
+        #region Color functions
         void Promeni(ColirRGB[] c)
         {
             int x, y;
-            float s, k = Operation.mmK((float)Double.Parse(Tod(textBox1.Text)));
-            float rand = Operation.mmK((float)Double.Parse(Tod(textBox2.Text)));
+            float s, k = Operation.mmK((float)Double.Parse(textBox1.Text.Replace('.',',')));
+            float rand = Operation.mmK((float)Double.Parse(textBox2.Text.Replace('.', ',')));
             for (int i = 0; i < c.Length; i++)
             {
                 x = i % mx;
@@ -96,9 +93,9 @@ namespace photoshopCsharp
         }
         void Mezhi(ColirRGBA[] c)
         {
-            int k = int.Parse(textBox1.Text) > 0 ? int.Parse(textBox1.Text) : 1;
+            int count = int.Parse(textBox1.Text) > 0 ? int.Parse(textBox1.Text) : 1;
             uint[] r = new uint[mx * my];
-            float ch = Operation.mmK((float)Double.Parse(Tod(textBox4.Text)));
+            float ch = Operation.mmK((float)Double.Parse(textBox4.Text.Replace('.', ',')));
 
             if (vybir == "за виглядом")
                 for (int i = 0; i < c.Length; i++)
@@ -107,17 +104,40 @@ namespace photoshopCsharp
                 for (int i = 0; i < c.Length; i++)
                     r[i] = (Operation.riznK(((ColirHSV)Ceredniy(c, i % mx, i / mx)).h, ((ColirHSV)c[i]).h, diapazon: 360) >= ch * 120) ? 1u : 0;
 
-            for (int e = 0; e + 1 < k; e++)
+            for (int e = 0; e + 1 < count; e++)
                 for (int i = 0; i < c.Length; i++)
                     r[i] = Mezha(r, i % mx, i / mx, (uint)(e + 1));
 
             for (int i = 0; i < c.Length; i++)
                 if (r[i] > 0) c[i] = new ColirRGBA();
+
+            uint Mezha(uint[] k, int x, int y, uint t)
+            {
+                int n = x + y * mx;
+                if (k[n] > 0)
+                    return k[n];
+                if (n >= mx)
+                {
+                    if (x > 0 && k[n - 1 - mx] == t) return t + 1;
+                    if (x + 1 < mx && k[n + 1 - mx] == t) return t + 1;
+                    if (k[n - mx] == t) return t + 1;
+                }
+                if (n < mx * (my - 1))
+                {
+                    if (x > 0 && k[n - 1 + mx] == t) return t + 1;
+                    if (x + 1 < mx && k[n + 1 + mx] == t) return t + 1;
+                    if (k[n + mx] == t) return t + 1;
+                }
+                if (x > 0 && k[n - 1] == t) return t + 1;
+                if (x + 1 < mx && k[n + 1] == t) return t + 1;
+                return 0;
+            }
+
         }
         void Art1(ColirRGB[] c)
         {
-            double k = Operation.mmK((float)Double.Parse(Tod(textBox2.Text)));
-            float rand = Operation.mmK((float)Double.Parse(Tod(textBox2.Text)));
+            double k = Operation.mmK((float)Double.Parse(textBox2.Text.Replace('.', ',')));
+            float rand = Operation.mmK((float)Double.Parse(textBox2.Text.Replace('.', ',')));
             vid = 300;
             for (int i = 0; i < c.Length; i++)
             {
@@ -155,12 +175,12 @@ namespace photoshopCsharp
         {
             if (listMapCount > 1)
             {
-                float kut = 1 / (float)Math.Tan((double)(Operation.diap((float)Double.Parse(Tod(textBox4.Text)), max: 135f, min: 45f) / 57.17f));
-                int x1 = (int)(mx * Operation.diap((float)Double.Parse(Tod(textBox1.Text))));
+                float kut = 1 / (float)Math.Tan((double)(Operation.diap((float)Double.Parse(textBox4.Text.Replace('.', ',')), max: 135f, min: 45f) / 57.17f));
+                int x1 = (int)(mx * Operation.diap((float)Double.Parse(textBox1.Text.Replace('.', ','))));
                 int w = int.Parse(textBox6.Text) < 0 ? 0 : int.Parse(textBox6.Text);
 
                 float ky = (float)MyList.ElementAt(listMapCount - 2) / my;
-                int x2 = (int)(MxList.ElementAt(listMapCount - 2) * Operation.diap((float)Double.Parse(Tod(textBox2.Text))) / ky);
+                int x2 = (int)(MxList.ElementAt(listMapCount - 2) * Operation.diap((float)Double.Parse(textBox2.Text.Replace('.', ','))) / ky);
                 int rx2 = (int)(MxList.ElementAt(listMapCount - 2) / ky);
 
                 ColirRGB[] c2 = new ColirRGB[(int)(MxList.ElementAt(listMapCount - 2) / ky) * my];
@@ -205,11 +225,64 @@ namespace photoshopCsharp
         }
         void PutSpace(ColirRGBA[] c)
         {
-            ColirHSV s;
-            for (int i = 0; i < c.Length; i++)
+            bool all = true;
+            Color space = pictureBox2.BackColor;
+            int lenth = c.Where(e => space == e).Count();
+
+            while (true)
             {
-                s = c[i];
-                c[i] = new ColirRGBA(new ColirHSV(s.h, (int)(Math.Sqrt(s.s) * 10), s.v));
+                ColirRGBA[] newc = new ColirRGBA[c.Length];
+                c.CopyTo(newc, 0);
+
+                for (int i = 0; i < c.Length; i++)
+                    if(c[i] == space)
+                {
+                        int x = i % mx;
+                        int y = i / mx;
+                        int r=0,g=0,b=0;
+                        int count = 0;
+
+                        if (x > 0 && space != c[i - 1])
+                        {
+                            r += c[i - 1].R;
+                            g += c[i - 1].G;
+                            b += c[i - 1].B;
+                            count++;
+                        }
+                        if (x + 1 < mx && space != c[i + 1])
+                        {
+                            r += c[i + 1].R;
+                            g += c[i + 1].G;
+                            b += c[i + 1].B;
+                            count++;
+                        }
+                        if (y > 0 && space != c[i - mx])
+                        {
+                            r += c[i - mx].R;
+                            g += c[i - mx].G;
+                            b += c[i - mx].B;
+                            count++;
+                        }
+                        if (y + 1 < my && space != c[i + mx])
+                        {
+                            r += c[i + mx].R;
+                            g += c[i + mx].G;
+                            b += c[i + mx].B;
+                            count++;
+                        }
+                        if (count > 0)
+                        {
+                            newc[i] = new ColirRGBA(r, g, b, c[i].a) / count;
+                            lock((object)vid)
+                                vid += 10000f / lenth;
+                        }
+
+                        all = false;
+                    }
+                if (all)
+                    return;
+                all = true;
+                //newc.CopyTo(c,0);
             }
         }
 
@@ -296,6 +369,8 @@ namespace photoshopCsharp
             mx = sx;
             my = sy;
         }
+
+        //extra methods
         ColirRGBA Ceredniy(ColirRGBA[] c, int x, int y)
         {
             ColirRGBA cer = new ColirRGBA();
@@ -343,27 +418,7 @@ namespace photoshopCsharp
             cer = new ColirRGBA((int)((float)cer.R / k), (int)((float)cer.G / k), (int)((float)cer.B / k));
             return cer;
         }
-        uint Mezha(uint[] k, int x, int y, uint t)
-        {
-            int n = x + y * mx;
-            if (k[n] > 0)
-                return k[n];
-            if (n >= mx)
-            {
-                if (x > 0 && k[n - 1 - mx] == t) return t + 1;
-                if (x + 1 < mx && k[n + 1 - mx] == t) return t + 1;
-                if (k[n - mx] == t) return t + 1;
-            }
-            if (n < mx * (my - 1))
-            {
-                if (x > 0 && k[n - 1 + mx] == t) return t + 1;
-                if (x + 1 < mx && k[n + 1 + mx] == t) return t + 1;
-                if (k[n + mx] == t) return t + 1;
-            }
-            if (x > 0 && k[n - 1] == t) return t + 1;
-            if (x + 1 < mx && k[n + 1] == t) return t + 1;
-            return 0;
-        }
+        #endregion
 
         public void Do(object s)
         {
@@ -420,6 +475,8 @@ namespace photoshopCsharp
             CreateMap(map);
             vid += 100f;
         }
+
+        #region events
         private void button1_Click(object sender, EventArgs e)//запуск
         {
             label5.Visible = true;
@@ -650,6 +707,7 @@ namespace photoshopCsharp
                 pictureBox2.BackColor = picture.GetPixel(e.X*picture.Width/pictureBox1.Width,e.Y * picture.Height / pictureBox1.Height);
             }
         }
+        #endregion
 
         void CreateMap(Bitmap x1)
         {
