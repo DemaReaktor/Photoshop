@@ -1,7 +1,6 @@
 E:\C#\photoshopCsharp\bin\Debug\photoshopCsharp.exe.config
 E:\C#\photoshopCsharp\bin\Debug\photoshopCsharp.exe
 E:\C#\photoshopCsharp\bin\Debug\photoshopCsharp.pdb
-E:\C#\photoshopCsharp\obj\Debug\photoshopCsharp.csprojAssemblyReference.cache
 E:\C#\photoshopCsharp\obj\Debug\photoshopCsharp.Properties.Resources.resources
 E:\C#\photoshopCsharp\obj\Debug\photoshopCsharp.csproj.GenerateResource.cache
 E:\C#\photoshopCsharp\obj\Debug\photoshopCsharp.exe
@@ -14,3 +13,4 @@ E:\C#\photoshopCsharp\obj\Debug\photoshopCsharp.Form1.resources
 E:\C#\photoshopCsharp\obj\Debug\photoshopCsharp.csproj.CoreCompileInputs.cache
 E:\C#\photoshopCsharp\obj\Debug\Interop.AutoItX3Lib.dll
 E:\C#\photoshopCsharp\obj\Debug\photoshopCsharp.csproj.ResolveComReference.cache
+E:\C#\photoshopCsharp\obj\Debug\photoshopCsharp.csproj.AssemblyReference.cache

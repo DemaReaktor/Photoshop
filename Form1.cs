@@ -48,14 +48,15 @@ namespace photoshopCsharp
             Controllist[11] = checkBox1;
             Controllist[12] = label6;
             Controllist[13] = textBox6;
+            Controllist[14] = textBox7;
 
-            Controllist[14] = label1;
-            Controllist[15] = button4;
-            Controllist[16] = button3;
-            Controllist[17] = button2;
-            Controllist[18] = button1;
-            Controllist[19] = comboBox2;
-            Controllist[20] = pictureBox1;
+            Controllist[15] = label1;
+            Controllist[16] = button4;
+            Controllist[17] = button3;
+            Controllist[18] = button2;
+            Controllist[19] = button1;
+            Controllist[20] = comboBox2;
+            Controllist[21] = pictureBox1;
             vid = -1;
             j = new Bitmap(pictureBox1.Image);// new Bitmap(@"E:\C#\photoshopCsharp\1.jpg");
             listMapCount = 0;
@@ -198,7 +199,7 @@ namespace photoshopCsharp
             for (int i = 0; i < c.Length; i++)
             {
                 s = c[i];
-                c[i] = new ColirRGBA( new ColirHSV(s.h, (int)(Math.Sqrt(s.s) * 10), s.v));
+                c[i] = new ColirRGBA(new ColirHSV(s.h, (int)(Math.Sqrt(s.s) * 10), s.v));
             }
         }
 
@@ -210,15 +211,17 @@ namespace photoshopCsharp
         public void AlphaToColor(ColirRGBA[] c)
         {
             int k = int.Parse(textBox1.Text).mm(1, 50);
-            int variant = int.Parse(textBox2.Text).mm(1, 5);
+            int variant = int.Parse(textBox2.Text).mm(1, 6);
             int variant2 = int.Parse(textBox4.Text).mm(1, 3);
-            float rozmir = (float)(int.Parse(textBox6.Text).mm(1, 100)) / 10f;
+            int k1 = int.Parse(textBox7.Text).mm(1, 100);
+            float rozmir = (float)(int.Parse(textBox6.Text).mm(1, 10000)) * 0.01f;
             for (int y = 0; y < my; y++)
                 for (int x = 0; x < mx; x++)
                 {
-                    float rx = (float)x * rozmir, ry = (float)x * rozmir;
+                    float rx = (float)x * rozmir, ry = (float)y * rozmir;
                     double nx = 2f * x * k / mx * Math.PI, ny = 2f * y * k / my * Math.PI;
-                    int i = x + y * mx, ri = (int)(x* rozmir + y * mx * rozmir);
+                    int i = x + y * mx;
+                    float ri = rx + ry * mx;
                     float cx = rx / mx, cy = ry / my;
                     //float t = 5000f * Math.Pow(Math.E, Math.Sin(i)) + x + y;
                     //int h = (7200 + (int)(10f * ind) - (int)(cx * 10f) * 360 - (int)(cy * 10f) * 360) % 360;
@@ -226,7 +229,7 @@ namespace photoshopCsharp
                     switch (variant)
                     {
                         case 1:
-                            h = (ri * (ri % 10)) % 360;
+                            h = (int)((ri * (ri % 10))) % 360;
                             break;
                         case 2:
                             h = (int)(5000f * Math.Pow(Math.E, Math.Sin(ri)) + rx + ry) % 360;
@@ -238,7 +241,13 @@ namespace photoshopCsharp
                             h = (int)(rx * rx * rx + ry * Math.Pow(i, 2 + Math.Sin(rx * ry))) % 360;
                             break;
                         case 5:
-                            h = (int)(ri * (ri % 100)) % 360;
+                            h = (int)(ri * (ri % k)) % 360;
+                            break;
+                        case 6:
+                            float kx = rx % k1 -0.5f * k1, ky = ry % k1 - 0.5f * k1;
+                            float n1 = Math.Abs(kx * kx + ky * ky + k * k * 0.25f);
+                            double n2 = 1 + Math.Sin(x) * Math.Cos(y);
+                            h = (int)(n1 * n2) % 360;
                             break;
                     }
 
@@ -515,10 +524,12 @@ namespace photoshopCsharp
                     textBox2.Visible = true;
                     textBox4.Visible = true;
                     textBox6.Visible = true;
+                    textBox7.Visible = true;
                     textBox1.Text = "10";
-                    textBox2.Text = "1";
-                    textBox4.Text = "1";
-                    textBox6.Text = "10";
+                    textBox2.Text = "6";
+                    textBox4.Text = "3";
+                    textBox6.Text = "100";
+                    textBox7.Text = "10";
                     break;
                 case "ChangeSize":
                     textBox1.Visible = true;
