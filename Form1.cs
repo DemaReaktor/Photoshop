@@ -21,7 +21,7 @@ namespace photoshopCsharp
         Bitmap j;
         List<Bitmap> Jp { get; }
 
-        bool vybir;
+        string vybir;
         float vid;
         string Tod(string s)
         {
@@ -65,7 +65,7 @@ namespace photoshopCsharp
             Jp = new List<Bitmap>();
 
             CreateMap(j);
-            vybir = false;
+            vybir = comboBox1.Text;
             comboBox2_SelectedIndexChanged();
         }
         void Clear()
@@ -74,6 +74,7 @@ namespace photoshopCsharp
             {
                 Controllist[i].Visible = false;
             }
+            pictureBox2.BackColor = Color.FromArgb(0,0,0,0);
         }
         void Promeni(ColirRGB[] c)
         {
@@ -99,7 +100,7 @@ namespace photoshopCsharp
             uint[] r = new uint[mx * my];
             float ch = Operation.mmK((float)Double.Parse(Tod(textBox4.Text)));
 
-            if (vybir)
+            if (vybir == "за виглядом")
                 for (int i = 0; i < c.Length; i++)
                     r[i] = (ColirOperation.d(Ceredniy(c, i % mx, i / mx), c[i]) >= ch * 255) ? 1u : 0;
             else
@@ -194,6 +195,15 @@ namespace photoshopCsharp
             }
         }
         void osv(ColirRGBA[] c)
+        {
+            ColirHSV s;
+            for (int i = 0; i < c.Length; i++)
+            {
+                s = c[i];
+                c[i] = new ColirRGBA(new ColirHSV(s.h, (int)(Math.Sqrt(s.s) * 10), s.v));
+            }
+        }
+        void PutSpace(ColirRGBA[] c)
         {
             ColirHSV s;
             for (int i = 0; i < c.Length; i++)
@@ -398,6 +408,9 @@ namespace photoshopCsharp
                 case "освітлення":
                     osv(c);
                     break;
+                case "заповнити пустоту":
+                    PutSpace(c);
+                    break;
             }
             vid += 100f;
             map = new Bitmap(map, mx, my);
@@ -502,6 +515,9 @@ namespace photoshopCsharp
                     textBox1.Text = "1";
                     textBox2.Text = "0";
                     textBox4.Text = "1";
+                    comboBox1.Items.Clear();
+                    comboBox1.Items.Add("за виглядом");
+                    comboBox1.Items.Add("за кольором");
                     break;
                 case "поєднання":
                     textBox1.Visible =
@@ -536,6 +552,15 @@ namespace photoshopCsharp
                     textBox2.Visible = true;
                     textBox1.Text = "1000";
                     textBox2.Text = "1000";
+                    break;
+                case "заповнити пустоту":
+                    comboBox1.Visible = true;
+                    pictureBox2.Visible = true;
+                    comboBox1.Items.Clear();
+                    comboBox1.Items.Add("вручну");
+                    comboBox1.Items.Add("за фото");
+                    comboBox1.Text = "за фото";
+                    comboBox1_SelectedIndexChanged(null, null);
                     break;
             }
         }
@@ -589,7 +614,12 @@ namespace photoshopCsharp
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            vybir = (comboBox1.Text == "за виглядом");
+            vybir = comboBox1.Text;
+                if (comboBox2.Text == "заповнити пустоту" && vybir == "вручну")
+                {
+                    colorDialog1.ShowDialog();
+                    pictureBox2.BackColor = colorDialog1.Color;
+            }
         }
 
         private void button3_Click(object sender, EventArgs e)//відкрити
@@ -611,6 +641,16 @@ namespace photoshopCsharp
                 }
             }
         }
+
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        {
+            if(comboBox2.Text == "заповнити пустоту" && vybir == "за фото")
+            {
+                Bitmap picture = pictureBox1.Image as Bitmap;
+                pictureBox2.BackColor = picture.GetPixel(e.X*picture.Width/pictureBox1.Width,e.Y * picture.Height / pictureBox1.Height);
+            }
+        }
+
         void CreateMap(Bitmap x1)
         {
             Bitmap x = new Bitmap(x1);
